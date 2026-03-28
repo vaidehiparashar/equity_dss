@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+
+  # ── MySQL 8.0 ──────────────────────────────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: equity_mysql
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: adminpanel
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # Auto-runs migration on first start (only when volume is empty)
+      - ./ci4-backend/database/migration.sql:/docker-entrypoint-initdb.d/migration.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ── CodeIgniter 4 Backend ──────────────────────────────────────────────────
+  backend:
+    build: ./ci4-backend
+    container_name: equity_ci4
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      # Override .env hostname so backend reaches the mysql service
+      - "database.default.hostname=mysql"
+    ports:
+      - "8001:8000"
+    volumes:
+      # Mount source so code changes reflect without rebuild
+      - ./ci4-backend:/var/www/html
+
+# Named volume for MySQL data persistence
+volumes:
+  mysql_data:

@@ -170,6 +170,14 @@ class AuthController extends BaseController
 
     // ── Helpers ──────────────────────────────────────────────
 
+    private function respond(array $data, int $statusCode = 200): ResponseInterface
+    {
+        return $this->response
+            ->setStatusCode($statusCode)
+            ->setContentType('application/json')
+            ->setJSON($data);
+    }
+
     private function fail(string $message, int $code = 400): ResponseInterface
     {
         return $this->respond(['status' => false, 'message' => $message], $code);

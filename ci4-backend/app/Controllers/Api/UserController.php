@@ -81,4 +81,14 @@ class UserController extends BaseController
 
         return $this->respond(['status' => true, 'message' => 'Teacher deleted.']);
     }
+
+    // ── Helpers ──────────────────────────────────────────────
+
+    private function respond(array $data, int $statusCode = 200): ResponseInterface
+    {
+        return $this->response
+            ->setStatusCode($statusCode)
+            ->setContentType('application/json')
+            ->setJSON($data);
+    }
 }
